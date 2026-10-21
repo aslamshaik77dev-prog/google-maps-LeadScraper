@@ -1108,6 +1108,110 @@
             }
         }
 
+        /* Mobile Hamburger & Navigation Drawer */
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--surface-border);
+            color: #fff;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .mobile-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .mobile-drawer {
+            display: none;
+            position: fixed;
+            top: 72px;
+            left: 0;
+            right: 0;
+            background: rgba(11, 17, 32, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--surface-border);
+            padding: 1.25rem;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 49;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+            animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mobile-drawer.open {
+            display: flex;
+        }
+
+        .mobile-drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-md);
+            color: #fff;
+            font-size: 0.92rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mobile-drawer-item:hover, .mobile-drawer-item:active {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.35);
+            color: #93c5fd;
+        }
+
+        /* Mobile Segmented View Tabs */
+        .mobile-view-tabs {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .mobile-tab {
+            padding: 0.75rem;
+            text-align: center;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--surface-border);
+            border-radius: var(--radius-md);
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mobile-tab.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: #93c5fd;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+            }
+            .mobile-view-tabs {
+                display: grid;
+            }
+        }
+
         @media (max-width: 420px) {
             .stats-grid {
                 grid-template-columns: 1fr;
@@ -1140,8 +1244,29 @@
                 <span class="engine-dot"></span>
                 <span>Go Engine Live (Port 8080)</span>
             </div>
+            <button id="hamburgerBtn" class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle Menu" title="Open Navigation Menu">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
         </div>
     </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobileDrawer" class="mobile-drawer">
+        <div class="mobile-drawer-item" onclick="showSection('form'); closeMobileMenu();">
+            <svg width="20" height="20" fill="none" stroke="#60a5fa" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            <span>🚀 New Extraction Campaign</span>
+        </div>
+        <div class="mobile-drawer-item" onclick="showSection('table'); closeMobileMenu();">
+            <svg width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1zm0 5h18M9 9v11"/></svg>
+            <span>📋 Active & Completed Campaigns</span>
+        </div>
+        <div class="mobile-drawer-item" onclick="loadJobs(true); closeMobileMenu();">
+            <svg width="20" height="20" fill="none" stroke="#fbbf24" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>🔄 Refresh Live Data</span>
+        </div>
+    </div>
 
     <!-- Main Content Area -->
     <main>
@@ -1189,11 +1314,21 @@
             </div>
         </div>
 
+        <!-- Mobile Segmented View Tabs -->
+        <div class="mobile-view-tabs">
+            <button id="tabBtnForm" class="mobile-tab active" onclick="showSection('form')">
+                🚀 New Campaign
+            </button>
+            <button id="tabBtnTable" class="mobile-tab" onclick="showSection('table')">
+                📋 Campaigns & Leads
+            </button>
+        </div>
+
         <!-- 2-Column Workspace Grid -->
         <div class="workspace-grid">
 
             <!-- LEFT: Scrape Campaign Launcher -->
-            <div class="glass-card">
+            <div id="newCampaignSection" class="glass-card">
                 <div class="panel-header">
                     <h2>
                         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
@@ -1320,10 +1455,10 @@
             </div>
 
             <!-- RIGHT: Scrape Tasks & Leads Grid -->
-            <div class="glass-card jobs-panel">
+            <div id="campaignsTableSection" class="glass-card jobs-panel">
                 <div class="panel-header">
                     <h2>
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1zm0 5h18M9 9v11"/></svg>
                         Active & Completed Campaigns
                     </h2>
                     <div class="jobs-header-actions">
@@ -1763,6 +1898,61 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         }
+
+        function toggleMobileMenu() {
+            const drawer = document.getElementById('mobileDrawer');
+            if (drawer) drawer.classList.toggle('open');
+        }
+
+        function closeMobileMenu() {
+            const drawer = document.getElementById('mobileDrawer');
+            if (drawer) drawer.classList.remove('open');
+        }
+
+        function showSection(type) {
+            const formSec = document.getElementById('newCampaignSection');
+            const tableSec = document.getElementById('campaignsTableSection');
+            const tabForm = document.getElementById('tabBtnForm');
+            const tabTable = document.getElementById('tabBtnTable');
+
+            if (window.innerWidth <= 768) {
+                if (type === 'form') {
+                    if (formSec) formSec.style.display = 'block';
+                    if (tableSec) tableSec.style.display = 'none';
+                    if (tabForm) tabForm.classList.add('active');
+                    if (tabTable) tabTable.classList.remove('active');
+                    if (formSec) formSec.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    if (formSec) formSec.style.display = 'none';
+                    if (tableSec) tableSec.style.display = 'flex';
+                    if (tabForm) tabForm.classList.remove('active');
+                    if (tabTable) tabTable.classList.add('active');
+                    if (tableSec) tableSec.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else {
+                if (formSec) formSec.style.display = 'block';
+                if (tableSec) tableSec.style.display = 'flex';
+                const target = type === 'form' ? formSec : tableSec;
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                const formSec = document.getElementById('newCampaignSection');
+                const tableSec = document.getElementById('campaignsTableSection');
+                if (formSec) formSec.style.display = 'block';
+                if (tableSec) tableSec.style.display = 'flex';
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            const drawer = document.getElementById('mobileDrawer');
+            const btn = document.getElementById('hamburgerBtn');
+            if (drawer && drawer.classList.contains('open') && !drawer.contains(e.target) && !btn.contains(e.target)) {
+                drawer.classList.remove('open');
+            }
+        });
     </script>
 </body>
 </html>
