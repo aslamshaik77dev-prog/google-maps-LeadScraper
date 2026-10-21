@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG GO_VERSION=1.27.1
+ARG GO_VERSION=1.24.1
 
 # Build stage for Playwright dependencies
 FROM golang:${GO_VERSION}-trixie AS playwright-deps
@@ -29,9 +29,12 @@ FROM debian:trixie-slim
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/browsers
 ENV PLAYWRIGHT_DRIVER_PATH=/opt/ms-playwright-go
 
-# Install only the necessary dependencies in a single layer
+# Install runtime dependencies including python3 and curl
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    curl \
+    python3 \
+    python3-pip \
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
@@ -54,12 +57,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip3 install --no-cache-dir requests bottle --break-system-packages
+
 COPY --from=playwright-deps /opt/browsers /opt/browsers
 COPY --from=playwright-deps /opt/ms-playwright-go /opt/ms-playwright-go
 
 RUN chmod -R 755 /opt/browsers \
     && chmod -R 755 /opt/ms-playwright-go
 
+WORKDIR /app
 COPY --from=builder /usr/bin/google-maps-scraper /usr/bin/
+COPY ui /app/ui
+COPY web_ui.py entrypoint.sh /app/
 
-ENTRYPOINT ["google-maps-scraper"]
+RUN chmod +x /app/entrypoint.sh
+
+ENV PORT=10000
+EXPOSE 10000
+
+ENTRYPOINT ["/app/entrypoint.sh"]
