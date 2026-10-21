@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG GO_VERSION=1.24.1
+ARG GO_VERSION=1.27.1
 
 # Build stage for Playwright dependencies
 FROM golang:${GO_VERSION}-trixie AS playwright-deps
