@@ -7,12 +7,17 @@ from bottle import Bottle, request, response, static_file, run
 
 app = Bottle()
 
-GO_API = os.getenv("GO_API", "http://localhost:8080")
+GO_API = os.getenv("GO_API", "http://127.0.0.1:8080")
 UI_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui")
 
 @app.route('/')
 def index():
     return static_file("index.html", root=UI_DIR)
+
+@app.route('/favicon.ico')
+def favicon():
+    response.status = 204
+    return ''
 
 @app.route('/static/<filepath:path>')
 def server_static(filepath):
@@ -29,39 +34,41 @@ def health():
 @app.route('/api/jobs', method=['GET'])
 def get_jobs():
     try:
-        r = requests.get(f"{GO_API}/api/v1/jobs")
+        r = requests.get(f"{GO_API}/api/v1/jobs", timeout=8)
         response.content_type = 'application/json'
         return r.text
     except Exception as e:
-        response.status = 500
-        return {"error": str(e)}
+        # Return empty list if Go engine is warming up so UI loads cleanly
+        response.content_type = 'application/json'
+        return json.dumps([])
 
 @app.route('/api/jobs', method=['POST'])
 def create_job():
     try:
         payload = request.json
-        r = requests.post(f"{GO_API}/api/v1/jobs", json=payload)
+        r = requests.post(f"{GO_API}/api/v1/jobs", json=payload, timeout=15)
         response.status = r.status_code
         response.content_type = 'application/json'
         return r.text
     except Exception as e:
-        response.status = 500
-        return {"error": str(e)}
+        response.status = 503
+        response.content_type = 'application/json'
+        return json.dumps({"error": f"Scraping engine unavailable: {str(e)}"})
 
 @app.route('/api/jobs/<job_id>', method=['DELETE'])
 def delete_job(job_id):
     try:
-        r = requests.delete(f"{GO_API}/api/v1/jobs/{job_id}")
+        r = requests.delete(f"{GO_API}/api/v1/jobs/{job_id}", timeout=10)
         response.status = r.status_code
         return r.text
     except Exception as e:
         response.status = 500
-        return {"error": str(e)}
+        return json.dumps({"error": str(e)})
 
 @app.route('/api/jobs/<job_id>/download')
 def download_csv(job_id):
     try:
-        r = requests.get(f"{GO_API}/api/v1/jobs/{job_id}/download", stream=True)
+        r = requests.get(f"{GO_API}/api/v1/jobs/{job_id}/download", stream=True, timeout=15)
         response.status = r.status_code
         for k, v in r.headers.items():
             if k.lower() in ['content-type', 'content-disposition']:
@@ -74,7 +81,7 @@ def download_csv(job_id):
 @app.route('/api/jobs/<job_id>/preview')
 def preview_job(job_id):
     try:
-        r = requests.get(f"{GO_API}/api/v1/jobs/{job_id}/download")
+        r = requests.get(f"{GO_API}/api/v1/jobs/{job_id}/download", timeout=15)
         if r.status_code != 200:
             response.status = r.status_code
             return {"error": "Failed to retrieve CSV data", "status_code": r.status_code}
@@ -128,7 +135,7 @@ def preview_job(job_id):
 @app.route('/api/jobs/<job_id>/download-json')
 def download_json(job_id):
     try:
-        r = requests.get(f"{GO_API}/api/v1/jobs/{job_id}/download")
+        r = requests.get(f"{GO_API}/api/v1/jobs/{job_id}/download", timeout=15)
         if r.status_code != 200:
             response.status = r.status_code
             return {"error": "Failed to fetch data"}
